@@ -1,0 +1,85 @@
+.grid-container {
+    display: grid;
+    grid-template-columns: repeat(20, 24px);
+    grid-template-rows: repeat(10, 24px);
+    gap: 2px;
+    margin-top: 10px;
+}
+
+.cell {
+    width: 24px;
+    height: 24px;
+    border: 1px solid gray;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.cell.start {
+    background-color: rgb(0, 176, 0);
+}
+
+.cell.end {
+    background-color: red;
+}
+
+.cell.wall {
+    background-color: black;
+}
+
+.cell.visited {
+    background-color: rgb(163, 163, 255);
+}
+
+.cell.path {
+    background-color: rgb(187, 227, 24);
+}
+
+.blink {
+    animation: blinker 0.5s linear infinite;
+}
+
+@keyframes blinker {
+    50% {
+        opacity: 0;
+    }
+}
+
+@media (min-width: 1367px) {
+    .grid-container {
+        grid-template-columns: repeat(20, 2vw);
+        grid-template-rows: repeat(10, 2vw);
+    }
+
+    .cell {
+        width: 2vw;
+        height: 2vw;
+    }
+}
+
+@media (max-width: 540px) {
+
+    .grid-container {
+        grid-template-columns: repeat(20, 14px);
+        grid-template-rows: repeat(10, 14px);
+    }
+
+    .cell {
+        width: 14px;
+        height: 14px;
+    }
+}
+
+@media (max-width: 340px) {
+
+    .grid-container {
+        grid-template-columns: repeat(20, 8px);
+        grid-template-rows: repeat(10, 8px);
+    }
+
+    .cell {
+        width: 8px;
+        height: 8px;
+    }
+}
