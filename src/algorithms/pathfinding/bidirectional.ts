@@ -69,7 +69,6 @@ export const bidirectional = async ({
                             neighbor, 
                             startCameFrom, 
                             endCameFrom,
-                            grid,
                             setGrid,
                             isRunningRef,
                             animationSpeed
@@ -136,7 +135,6 @@ export const bidirectional = async ({
                             neighbor, 
                             startCameFrom, 
                             endCameFrom,
-                            grid,
                             setGrid,
                             isRunningRef,
                             animationSpeed

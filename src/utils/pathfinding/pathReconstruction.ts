@@ -7,7 +7,6 @@ import playSound from '../../utils/playSound';
 export const reconstructPath = async (
     current: Cell, 
     cameFrom: Map<string, Cell>,
-    grid: GridType,
     setGrid: (grid: GridType | ((prevGrid: GridType) => GridType)) => void,
     isRunningRef: React.MutableRefObject<boolean>,
     animationSpeed: number = 30,
@@ -72,7 +71,6 @@ export const reconstructBidirectionalPath = async (
     meetingNode: Cell,
     startCameFrom: Map<string, Cell>,
     endCameFrom: Map<string, Cell>,
-    grid: GridType,
     setGrid: (grid: GridType | ((prevGrid: GridType) => GridType)) => void,
     isRunningRef: React.MutableRefObject<boolean>,
     animationSpeed: number = 30

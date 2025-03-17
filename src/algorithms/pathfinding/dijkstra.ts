@@ -37,7 +37,6 @@ export const dijkstra = async ({
             const path = await reconstructPath(
                 current,
                 cameFrom,
-                grid,
                 setGrid,
                 isRunningRef,
                 animationSpeed,
