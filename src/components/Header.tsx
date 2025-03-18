@@ -11,7 +11,7 @@ const Header: React.FC = () => {
                     <h1 className="text-2xl font-bold mb-4 md:mb-0">Algorithms Visualized</h1>
 
                     <nav className="flex flex-col md:flex-row gap-4 md:gap-6 items-center w-full md:w-auto">
-                        {[{ to: "/", label: "Home" }, { to: "/pathfinding", label: "Pathfinding" }].map((link) => (
+                        {[{ to: "/", label: "Home" }, { to: "/sorting", label: "Sorting" }, { to: "/pathfinding", label: "Pathfinding" }].map((link) => (
                             <Link
                                 key={link.to}
                                 to={link.to}
