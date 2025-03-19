@@ -4,6 +4,7 @@ import Header from './components/Header.tsx';
 import Footer from './components/Footer.tsx';
 import Home from './pages/Home';
 import SortingHome from './pages/sorting/SortingHome.tsx';
+import SortingVisualizer from './pages/sorting/SortingVisualizer.tsx';
 import PathfindingHome from './pages/pathfinding/PathfindingHome.tsx';
 import PathfindingVisualizer from './pages/pathfinding/PathfindingVisualizer.tsx';
 
@@ -15,6 +16,9 @@ const App: React.FC = () => {
                 <Routes>
                     <Route path="/" element={<Home />} />
                     <Route path="/sorting" element={<SortingHome />} />
+                    <Route path="/sorting/selection-sort" element={<SortingVisualizer />} />
+                    <Route path="/sorting/bubble-sort" element={<SortingVisualizer />} />
+                    <Route path="/sorting/shaker-sort" element={<SortingVisualizer />} />
                     <Route path="/pathfinding" element={<PathfindingHome />} />
                     <Route path="/pathfinding/dijkstra" element={<PathfindingVisualizer />} />
                     <Route path="/pathfinding/astar" element={<PathfindingVisualizer />} />
