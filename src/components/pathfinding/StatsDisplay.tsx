@@ -10,7 +10,7 @@ const StatsDisplay: React.FC<StatsDisplayProps> = ({ stats }) => {
     return (
         <div className="stats-container bg-gray-100 p-4 rounded-lg shadow-sm mb-4 w-full">
             <div className="text-sm font-semibold mb-2">Navigation Data:</div>
-            <div className="grid grid-cols-3 gap-4 text-center">
+            <div translate="no" className="grid grid-cols-3 gap-4 text-center">
                 <div className="stat-box">
                     <div className="text-sm font-semibold text-gray-600">Cells Visited</div>
                     <div className="text-xl font-bold text-green-600">{stats.visitedCells}</div>
