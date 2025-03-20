@@ -5,7 +5,7 @@ const Header: React.FC = () => {
     const location = useLocation();
 
     return (
-        <header className="bg-gray-800 text-white py-4 shadow-md relative">
+        <header translate="no" className="bg-gray-800 text-white py-4 shadow-md relative">
             <div className="container mx-auto px-6">
                 <div className="flex flex-col md:flex-row items-center justify-between">
                     <h1 className="text-2xl font-bold mb-4 md:mb-0">Algorithms Visualized</h1>

@@ -16,7 +16,7 @@ const Home: React.FC = () => {
                     and reorganized. Whether you're a student, programmer, or simply curious, this tool will help you better understand
                     fundamental computer science concepts in an intuitive and fun way.
                 </p>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div translate="no" className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <Link to="/sorting" className="inline-block">
                         <button className="w-full bg-blue-500 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-full transition duration-300 ease-in-out">
                             Sorting Visualizer
