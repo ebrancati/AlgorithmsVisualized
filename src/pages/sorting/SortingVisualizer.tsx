@@ -467,6 +467,7 @@ const SortingVisualizer: React.FC = () => {
                     <div className="flex items-center">
                         <label className="mr-2 text-sm" htmlFor="algorithm">Sorting Algorithm:</label>
                         <select
+                            translate="no"
                             id="algorithm"
                             className="border rounded px-2 py-1 text-sm"
                             value={algorithm}

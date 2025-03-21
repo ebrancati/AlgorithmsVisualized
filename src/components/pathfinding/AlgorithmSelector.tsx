@@ -21,6 +21,7 @@ const AlgorithmSelector: React.FC<AlgorithmSelectorProps> = ({
                 Pathfinding Algorithm:
             </label>
             <select
+                translate="no"
                 id="algorithm"
                 className={`
                     border rounded px-2 py-1 text-sm
