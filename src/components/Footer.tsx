@@ -1,7 +1,7 @@
 import React from "react";
 
 const Footer: React.FC = () => {
-    const githubLink = "https://github.com/ebrancati/AlgorithmVisualizer";
+    const githubLink = "https://github.com/ebrancati/AlgorithmsVisualized";
 
     return (
         <footer className="bg-gray-800 text-gray-400 text-sm py-4 border-t border-gray-700">
