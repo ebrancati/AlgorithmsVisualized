@@ -22,7 +22,7 @@ interface UsePathfindingGridResult {
     setIsMouseDown: React.Dispatch<React.SetStateAction<boolean>>;
     draggingNodeType: "start" | "end" | null;
     setDraggingNodeType: React.Dispatch<React.SetStateAction<"start" | "end" | null>>;
-    isRunningRef: React.MutableRefObject<boolean>;
+    isRunningRef: React.RefObject<boolean>;
     handleCellClick: (x: number, y: number) => void;
     handleMouseDown: () => void;
     handleMouseUp: () => void;
@@ -48,7 +48,8 @@ export const usePathfindingGrid = ({
         isRunning: false
     });
     const [draggingNodeType, setDraggingNodeType] = useState<"start" | "end" | null>(null);
-    
+    const [isNodeSelectionMode, setIsNodeSelectionMode] = useState<boolean>(false);
+
     const isRunningRef = useRef<boolean>(false);
     const startTimeRef = useRef<number>(0);
     const timerRef = useRef<number | null>(null);
@@ -66,7 +67,7 @@ export const usePathfindingGrid = ({
         } else if (timerRef.current) {
             clearInterval(timerRef.current);
         }
-        
+
         return () => {
             if (timerRef.current) {
                 clearInterval(timerRef.current);
@@ -77,47 +78,85 @@ export const usePathfindingGrid = ({
     // Event Handlers
     const handleCellClick = (x: number, y: number) => {
         if (isRunningRef.current) return;
-        
-        setGrid(prevGrid => {
-            // Get the clicked cell
-            const clickedCell = prevGrid[y][x];
-            
-            // Case 1: Cell is start node - begin dragging it
-            if (clickedCell.type === "start") {
-                setDraggingNodeType("start");
+
+        const clickedCell = grid[y][x];
+
+        // Case 1: Cell is start node - begin selection
+        if (clickedCell.type === "start") {
+            setDraggingNodeType("start");
+            setIsNodeSelectionMode(true);
+            return;
+        }
+
+        // Case 2: Cell is end node - begin selection
+        if (clickedCell.type === "end") {
+            setDraggingNodeType("end");
+            setIsNodeSelectionMode(true);
+            return;
+        }
+
+        // Case 3: If we're in node selection mode, place the selected node
+        if (isNodeSelectionMode && draggingNodeType) {
+            setGrid(prevGrid => {
+                // Only allow placing on valid cells
+                if (clickedCell.type !== "start" && clickedCell.type !== "end" && clickedCell.type !== "wall") {
+                    const newGrid = prevGrid.map(row => row.map(cell => ({ ...cell })));
+
+                    // Remove the old node
+                    for (let i = 0; i < rows; i++) {
+                        for (let j = 0; j < cols; j++) {
+                            if (newGrid[i][j].type === draggingNodeType) {
+                                newGrid[i][j].type = "empty";
+                            }
+                        }
+                    }
+
+                    // Place the node at the new position
+                    newGrid[y][x].type = draggingNodeType;
+
+                    // Update the state reference
+                    if (draggingNodeType === "start") {
+                        setStart(newGrid[y][x]);
+                    } else if (draggingNodeType === "end") {
+                        setEnd(newGrid[y][x]);
+                    }
+
+                    return newGrid;
+                }
                 return prevGrid;
-            }
-            
-            // Case 2: Cell is end node - begin dragging it
-            if (clickedCell.type === "end") {
-                setDraggingNodeType("end");
-                return prevGrid;
-            }
-            
-            // Case 3: No start node exists - place it
-            if (!start) {
-                const newGrid = prevGrid.map(row => 
-                    row.map(cell => ({...cell}))
-                );
+            });
+
+            // Exit selection mode
+            setDraggingNodeType(null);
+            setIsNodeSelectionMode(false);
+            return;
+        }
+
+        // Case 4: No start node exists - place it
+        if (!start) {
+            setGrid(prevGrid => {
+                const newGrid = prevGrid.map(row => row.map(cell => ({ ...cell })));
                 newGrid[y][x].type = "start";
                 setStart(newGrid[y][x]);
                 return newGrid;
-            }
-            
-            // Case 4: No end node exists - place it
-            if (!end) {
-                const newGrid = prevGrid.map(row => 
-                    row.map(cell => ({...cell}))
-                );
+            });
+            return;
+        }
+
+        // Case 5: No end node exists - place it
+        if (!end) {
+            setGrid(prevGrid => {
+                const newGrid = prevGrid.map(row => row.map(cell => ({ ...cell })));
                 newGrid[y][x].type = "end";
                 setEnd(newGrid[y][x]);
                 return newGrid;
-            }
-            
-            // Case 5: Toggle wall
-            const newGrid = prevGrid.map(row => 
-                row.map(cell => ({...cell}))
-            );
+            });
+            return;
+        }
+
+        // Case 6: Toggle wall when not in selection mode
+        setGrid(prevGrid => {
+            const newGrid = prevGrid.map(row => row.map(cell => ({ ...cell })));
             if (clickedCell.type === "wall") {
                 newGrid[y][x].type = "empty";
             } else if (clickedCell.type === "empty") {
@@ -133,24 +172,28 @@ export const usePathfindingGrid = ({
 
     const handleMouseUp = () => {
         setIsMouseDown(false);
-        setDraggingNodeType(null);
+
+        if (!isNodeSelectionMode) {
+            setDraggingNodeType(null);
+        }
     };
 
     const handleMouseOver = (x: number, y: number) => {
         if (isRunningRef.current || !isMouseDown) return;
-        
+
         setGrid(prevGrid => {
-            const newGrid = prevGrid.map(row => row.map(cell => ({...cell})));
-            
+            const newGrid = prevGrid.map(row => row.map(cell => ({ ...cell })));
+            const hoverCell = prevGrid[y][x];
+
             // If we're dragging a node (start or end)
             if (draggingNodeType) {
-                // First, check if the target cell is already occupied
-                if (newGrid[y][x].type !== "empty" && 
-                    newGrid[y][x].type !== "visited" && 
-                    newGrid[y][x].type !== "path") {
-                    return prevGrid; // Can't move to an occupied cell
+                // Only allow placing on valid cells
+                if (hoverCell.type !== "empty" &&
+                    hoverCell.type !== "visited" &&
+                    hoverCell.type !== "path") {
+                    return prevGrid;
                 }
-                
+
                 // Remove the old node
                 for (let i = 0; i < rows; i++) {
                     for (let j = 0; j < cols; j++) {
@@ -159,26 +202,27 @@ export const usePathfindingGrid = ({
                         }
                     }
                 }
-                
+
                 // Place the node at the new position
                 newGrid[y][x].type = draggingNodeType;
-                
+
                 // Update the state reference
                 if (draggingNodeType === "start") {
                     setStart(newGrid[y][x]);
                 } else if (draggingNodeType === "end") {
                     setEnd(newGrid[y][x]);
                 }
-                
+
                 return newGrid;
             }
-            
-            // Otherwise, if we have both start and end nodes, we're drawing walls
-            if (start && end && newGrid[y][x].type !== "start" && newGrid[y][x].type !== "end") {
+
+            // Create walls only when not in selection mode
+            if (!isNodeSelectionMode && start && end &&
+                hoverCell.type !== "start" && hoverCell.type !== "end") {
                 newGrid[y][x].type = "wall";
                 return newGrid;
             }
-            
+
             return prevGrid;
         });
     };
@@ -194,6 +238,8 @@ export const usePathfindingGrid = ({
             elapsedTime: 0,
             isRunning: false
         });
+        setDraggingNodeType(null);
+        setIsNodeSelectionMode(false);
     };
 
     const handleReset = () => {
@@ -214,25 +260,27 @@ export const usePathfindingGrid = ({
             elapsedTime: 0,
             isRunning: false
         });
+        setDraggingNodeType(null);
+        setIsNodeSelectionMode(false);
     };
 
     // Helper for algorithms to visualize visited nodes
     const visitNode = async (node: Cell) => {
         await new Promise(resolve => setTimeout(resolve, animationSpeed));
-        
+
         if (!isRunningRef.current) return;
-        
+
         // Calculate distance-based sound frequency
         const distance = end ? Math.sqrt(Math.pow(node.x - end.x, 2) + Math.pow(node.y - end.y, 2)) : 0;
         const maxDistance = Math.sqrt(Math.pow(cols, 2) + Math.pow(rows, 2));
         const frequency = (1 - distance / maxDistance) * 40;
-        
+
         playSound(frequency, 75, false);
-        
+
         setGrid(prevGrid =>
             prevGrid.map(row =>
                 row.map(cell => {
-                    if (cell.x === node.x && cell.y === node.y && 
+                    if (cell.x === node.x && cell.y === node.y &&
                         cell.type !== "start" && cell.type !== "end") {
                         return { ...cell, type: "visited" };
                     }
