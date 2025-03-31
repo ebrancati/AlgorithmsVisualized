@@ -6,6 +6,7 @@ export const runShakerSort = async ({
     updateArrayItem,
     swap,
     handleStopAndPause,
+    isSorted,
     setComparisons,
     setArrayAccesses,
     comparisonsRef,
@@ -48,7 +49,7 @@ export const runShakerSort = async ({
                 const temp = tempArray[i].value;
                 tempArray[i].value = tempArray[i + 1].value;
                 tempArray[i + 1].value = temp;
-                
+
                 swap(i, i + 1);
                 swapped = true;
 
@@ -64,7 +65,7 @@ export const runShakerSort = async ({
 
         // Mark the last element as sorted after forward pass
         updateArrayItem(end, 'sorted');
-        
+
         if (!swapped) {
             for (let i = start; i < end; i++) {
                 updateArrayItem(i, 'sorted');
@@ -101,7 +102,7 @@ export const runShakerSort = async ({
                 const temp = tempArray[i].value;
                 tempArray[i].value = tempArray[i + 1].value;
                 tempArray[i + 1].value = temp;
-                
+
                 swap(i, i + 1);
                 swapped = true;
 
@@ -127,6 +128,8 @@ export const runShakerSort = async ({
 
         start++;
     }
+
+    await isSorted(array);
 
     setSorting(false);
     sortingRef.current = false;
