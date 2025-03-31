@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import playSound from '../../utils/playSound';
-import { runSelectionSort, runBubbleSort, runShakerSort } from '../../algorithms/sorting';
+import { runSelectionSort, runBubbleSort, runShakerSort, runMergeSort } from '../../algorithms/sorting';
 import { ArrayElement, AlgorithmType, ElementStatus } from '../../types/sorting';
 import AlgorithmDescription from '../../components/sorting/AlgorithmDescription';
 
@@ -30,7 +30,7 @@ const SortingVisualizer: React.FC = () => {
     const arrayAccessesRef = useRef<number>(0);
     const shufflingRef = useRef<boolean>(false);
     const pendingOperationRef = useRef<string | null>(null);
-    
+
     // Define isMuted as a constant or a state if you need to change it
     const isMuted = false;
 
@@ -56,7 +56,7 @@ const SortingVisualizer: React.FC = () => {
 
         const ctx = canvas.getContext('2d');
         if (!ctx) return;
-        
+
         const width = canvas.width;
         const height = canvas.height;
 
@@ -80,10 +80,10 @@ const SortingVisualizer: React.FC = () => {
                     ctx.fillStyle = '#F59E0B'; // yellow
                     break;
                 case 'potential-swap':
-                    ctx.fillStyle = '#34D399'; // green
+                    ctx.fillStyle = '#34D399'; // light green
                     break;
                 case 'sorted':
-                    ctx.fillStyle = '#10B981'; // green
+                    ctx.fillStyle = '#10B981'; // dark green
                     break;
                 default:
                     ctx.fillStyle = '#3B82F6'; // blue
@@ -106,54 +106,54 @@ const SortingVisualizer: React.FC = () => {
             // Number of shuffle steps - more steps = more dramatic shuffle
             const shuffleSteps = 15;
             const shuffleDelay = delayRef.current / 2;
-            
+
             for (let step = 0; step < shuffleSteps; step++) {
                 // Check if operation was cancelled
                 if (!shufflingRef.current) return;
-                
+
                 // For each step, perform multiple random swaps
                 const swapsPerStep = Math.ceil(arrayToShuffle.length / 3);
-                
+
                 for (let swap = 0; swap < swapsPerStep; swap++) {
                     const i = Math.floor(Math.random() * arrayToShuffle.length);
                     const j = Math.floor(Math.random() * arrayToShuffle.length);
-                    
+
                     // Skip if same index
                     if (i === j) continue;
 
                     if (!isFirstLoad) {
                         playSound(i, 100, isMuted);
                     }
-                    
+
                     // Mark elements as being shuffled
                     arrayToShuffle[i].status = 'comparing';
                     arrayToShuffle[j].status = 'swap';
-                    
+
                     // Swap values
                     const temp = arrayToShuffle[i].value;
                     arrayToShuffle[i].value = arrayToShuffle[j].value;
                     arrayToShuffle[j].value = temp;
                 }
-                
+
                 // Update state with the shuffled array
                 setArray([...arrayToShuffle]);
                 arrayRef.current = [...arrayToShuffle];
-                
+
                 // Short delay to see the animation
                 await sleep(shuffleDelay);
-                
+
                 // Reset status for next step
                 arrayToShuffle.forEach(item => item.status = 'default');
             }
-            
+
             // Final update with all statuses reset to default
             arrayToShuffle.forEach(item => item.status = 'default');
-            
+
             // Generate final random values
             for (let i = 0; i < arrayToShuffle.length; i++) {
                 arrayToShuffle[i].value = Math.floor(Math.random() * 300) + 10;
             }
-            
+
             setArray([...arrayToShuffle]);
             arrayRef.current = [...arrayToShuffle];
         };
@@ -170,21 +170,21 @@ const SortingVisualizer: React.FC = () => {
             arrayRef.current = resetArray;
             await sleep(50); // Small delay to ensure sorting is stopped
         }
-        
+
         // If we're already shuffling, return
         if (shufflingRef.current) return;
-        
+
         setShuffling(true);
         shufflingRef.current = true;
-        
+
         // Create initial array with current values or new ones if empty
-        const initialArray: ArrayElement[] = arrayRef.current.length === numElements 
+        const initialArray: ArrayElement[] = arrayRef.current.length === numElements
             ? [...arrayRef.current].map(item => ({ ...item, status: 'default' as ElementStatus }))
             : Array.from({ length: numElements }, () => ({
                 value: Math.floor(Math.random() * 300) + 10,
                 status: 'default' as ElementStatus
             }));
-        
+
         // If array length changed, create a new array
         if (arrayRef.current.length !== numElements) {
             const newArray: ArrayElement[] = [];
@@ -196,7 +196,7 @@ const SortingVisualizer: React.FC = () => {
             }
             setArray(newArray);
             arrayRef.current = newArray;
-            
+
             // Perform shuffle animation on the new array
             await performShuffleAnimation(newArray);
         } else {
@@ -207,7 +207,7 @@ const SortingVisualizer: React.FC = () => {
         if (isFirstLoad) {
             setIsFirstLoad(false);
         }
-        
+
         resetSorting();
         setShuffling(false);
         shufflingRef.current = false;
@@ -222,6 +222,8 @@ const SortingVisualizer: React.FC = () => {
             setAlgorithm('selectionSort');
         } else if (path.includes('/shaker-sort')) {
             setAlgorithm('shakerSort');
+        } else if (path.includes('/merge-sort')) {
+            setAlgorithm('mergeSort');
         }
     }, [location.pathname]);
 
@@ -231,7 +233,7 @@ const SortingVisualizer: React.FC = () => {
             // Stop sorting operations
             sortingRef.current = false;
             shufflingRef.current = false;
-            
+
             // Reset state values that should be reset on navigation
             resetSorting();
         };
@@ -284,7 +286,7 @@ const SortingVisualizer: React.FC = () => {
 
         // Play sounds for both swapped bars
         playSound(newArray[i].value, 100, isMuted);
-    
+
         // Small delay between sounds to make them distinguishable
         setTimeout(() => {
             playSound(newArray[j].value, 100, isMuted);
@@ -314,7 +316,7 @@ const SortingVisualizer: React.FC = () => {
     const isSorted = useCallback(async (el: ArrayElement[]): Promise<boolean> => {
         updateArrayItem(0, 'comparing');
         playSound(el[0].value, 100, isMuted);
-      
+
         for (let i = 1; i < el.length; i++) {
             if (el[i - 1].value > el[i].value) return false;
             updateArrayItem(i - 1, 'sorted');
@@ -322,9 +324,9 @@ const SortingVisualizer: React.FC = () => {
             playSound(el[i].value, 100, isMuted);
             await sleep(20);
         }
-      
+
         updateArrayItem(el.length - 1, 'sorted');
-      
+
         return true;
     }, [isMuted, updateArrayItem, sleep]);
 
@@ -391,6 +393,20 @@ const SortingVisualizer: React.FC = () => {
                 setSorting,
                 sortingRef
             });
+        } else if (algorithm === 'mergeSort') {
+            runMergeSort({
+                array: arrayRef.current,
+                updateArrayItem,
+                swap,
+                handleStopAndPause,
+                isSorted,
+                setComparisons,
+                setArrayAccesses,
+                comparisonsRef,
+                arrayAccessesRef,
+                setSorting,
+                sortingRef
+            });
         }
     }, [algorithm, sorting, shuffling, updateArrayItem, swap, handleStopAndPause, isSorted]);
 
@@ -406,11 +422,11 @@ const SortingVisualizer: React.FC = () => {
         setDelay(newDelay);
         delayRef.current = newDelay;
     }, []);
-    
+
     const handleAlgorithmChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>): void => {
         const newAlgorithm = e.target.value as AlgorithmType;
         setAlgorithm(newAlgorithm);
-        
+
         // Update the URL based on the selected algorithm
         let newPath = '/sorting/';
         if (newAlgorithm === 'bubbleSort') {
@@ -419,11 +435,13 @@ const SortingVisualizer: React.FC = () => {
             newPath += 'selection-sort';
         } else if (newAlgorithm === 'shakerSort') {
             newPath += 'shaker-sort';
+        } else if (newAlgorithm === 'mergeSort') {
+            newPath += 'merge-sort';
         }
-        
+
         // Navigate to the new URL without page refresh
         navigate(newPath, { replace: true });
-        
+
         // If sorting, stop and reset only the colors, not the array
         if (sorting) {
             // Stop the sorting
@@ -438,18 +456,18 @@ const SortingVisualizer: React.FC = () => {
             arrayRef.current = resetArray;
         }
     }, [navigate, sorting, resetSorting]);
-    
+
     const handleElementsChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>): void => {
         const newNumElements = Number(e.target.value);
-        
+
         // If sorting, stop the sorting operation first
         if (sorting) {
             resetSorting();
         }
-        
+
         // Set the pending operation to be handled after the state updates
         pendingOperationRef.current = 'elementChange';
-        
+
         // Update the numElements state
         setNumElements(newNumElements);
     }, [sorting, resetSorting]);
@@ -477,6 +495,7 @@ const SortingVisualizer: React.FC = () => {
                             <option value="selectionSort">Selection Sort</option>
                             <option value="bubbleSort">Bubble Sort</option>
                             <option value="shakerSort">Shaker Sort</option>
+                            <option value="mergeSort">Merge Sort</option>
                         </select>
                     </div>
 

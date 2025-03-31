@@ -30,7 +30,7 @@ const AlgorithmDescription: React.FC<AlgorithmDescriptionProps> = ({ algorithm }
                     </p>
                 </div>
             )}
-            
+
             {algorithm === 'bubbleSort' && (
                 <div className="mb-6">
                     <h2 className="text-2xl font-bold text-blue-700 mb-2">Bubble Sort Algorithm</h2>
@@ -51,7 +51,7 @@ const AlgorithmDescription: React.FC<AlgorithmDescriptionProps> = ({ algorithm }
                     </p>
                 </div>
             )}
-            
+
             {algorithm === 'shakerSort' && (
                 <div className="mb-6">
                     <h2 className="text-2xl font-bold text-blue-700 mb-2">Shaker Sort Algorithm</h2>
@@ -69,6 +69,34 @@ const AlgorithmDescription: React.FC<AlgorithmDescriptionProps> = ({ algorithm }
                     </ul>
                     <p className="text-gray-700">
                         Shaker Sort often outperforms standard Bubble Sort on partially sorted arrays by efficiently moving both small and large elements to their correct positions. It maintains O(1) space complexity and preserves stability, making it useful for educational visualization and small to medium datasets with some pre-existing order.
+                    </p>
+                </div>
+            )}
+
+            {algorithm === 'mergeSort' && (
+                <div className="mb-6">
+                    <h2 className="text-2xl font-bold text-blue-700 mb-2">Merge Sort Algorithm</h2>
+                    <p className="mb-4 text-gray-700">
+                        Merge Sort is an efficient, stable, comparison-based, divide and conquer algorithm. It works by dividing the input array into two halves, recursively sorting them, and then merging the sorted halves back together. This elegant approach produces a fully sorted array.
+                    </p>
+                    <h3 className="text-xl font-semibold text-blue-600 mb-2">Time Complexity Analysis</h3>
+                    <p className="text-gray-700 mb-2">
+                        Merge Sort offers consistent performance regardless of the input data distribution:
+                    </p>
+                    <ul className="list-disc pl-6 mb-4 text-gray-700">
+                        <li><strong>Best Case:</strong> O(n log n)</li>
+                        <li><strong>Average Case:</strong> O(n log n)</li>
+                        <li><strong>Worst Case:</strong> O(n log n)</li>
+                    </ul>
+                    <p className="text-gray-700 mb-2">
+                        Unlike the simpler algorithms, Merge Sort guarantees O(n log n) time complexity in all cases, making it much more efficient for large datasets. However, this comes with some trade-offs:
+                    </p>
+                    <ul className="list-disc pl-6 mb-4 text-gray-700">
+                        <li><strong>Space Complexity:</strong> O(n) - requires additional memory for the merging process</li>
+                        <li><strong>Stability:</strong> Stable - preserves the relative order of equal elements</li>
+                    </ul>
+                    <p className="text-gray-700">
+                        Merge Sort is widely used in practical applications because of its reliability and predictable performance. It's particularly valuable when stability is important and when working with linked lists, where it can be implemented with O(1) extra space.
                     </p>
                 </div>
             )}

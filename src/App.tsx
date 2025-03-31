@@ -19,6 +19,7 @@ const App: React.FC = () => {
                     <Route path="/sorting/selection-sort" element={<SortingVisualizer />} />
                     <Route path="/sorting/bubble-sort" element={<SortingVisualizer />} />
                     <Route path="/sorting/shaker-sort" element={<SortingVisualizer />} />
+                    <Route path="/sorting/merge-sort" element={<SortingVisualizer />} />
                     <Route path="/pathfinding" element={<PathfindingHome />} />
                     <Route path="/pathfinding/dijkstra" element={<PathfindingVisualizer />} />
                     <Route path="/pathfinding/astar" element={<PathfindingVisualizer />} />

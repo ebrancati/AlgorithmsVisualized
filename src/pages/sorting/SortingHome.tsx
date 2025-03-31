@@ -16,7 +16,7 @@ const SortingHome: React.FC = () => {
                     See how different algorithms like Bubble Sort, Selection Sort, and others rearrange data,
                     providing an intuitive understanding of their efficiency and logic.
                 </p>
-                <div translate="no" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div translate="no" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     <Link
                         to="/sorting/selection-sort"
                         className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-full transition duration-300 ease-in-out text-center"
@@ -34,6 +34,12 @@ const SortingHome: React.FC = () => {
                         className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-full transition duration-300 ease-in-out text-center"
                     >
                         Shaker Sort
+                    </Link>
+                    <Link
+                        to="/sorting/merge-sort"
+                        className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-full transition duration-300 ease-in-out text-center"
+                    >
+                        Merge Sort
                     </Link>
                 </div>
                 <p className="mt-8 text-gray-500 text-sm sm:text-base">
