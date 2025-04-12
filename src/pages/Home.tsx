@@ -27,6 +27,11 @@ const Home: React.FC = () => {
                             Pathfinding Visualizer
                         </button>
                     </Link>
+                    <Link to="/fractals" className="inline-block sm:col-span-2 sm:w-1/2 sm:mx-auto">
+                        <button className="w-full bg-purple-500 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded-full transition duration-300 ease-in-out">
+                            Fractals
+                        </button>
+                    </Link>
                 </div>
                 <p className="mt-8 text-gray-500 text-sm sm:text-base">
                     More algorithms are coming soon!

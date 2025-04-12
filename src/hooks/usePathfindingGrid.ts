@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Cell, GridType, Stats } from '../types/pathfinding';
 import { createGrid } from '../utils/pathfinding/grid';
-import playSound from '../utils/playSound';
+import { playAlgorithmSound as playSound} from '../utils/audioUtils';
 
 interface UsePathfindingGridProps {
     rows: number;

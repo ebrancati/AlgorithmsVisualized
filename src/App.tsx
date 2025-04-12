@@ -7,6 +7,8 @@ import SortingHome from './pages/sorting/SortingHome.tsx';
 import SortingVisualizer from './pages/sorting/SortingVisualizer.tsx';
 import PathfindingHome from './pages/pathfinding/PathfindingHome.tsx';
 import PathfindingVisualizer from './pages/pathfinding/PathfindingVisualizer.tsx';
+import FractalsPage from "./pages/fractals/FractalsPage";
+import PythagorasTreePage from "./pages/fractals/PythagorasTreePage";
 
 const App: React.FC = () => {
     return (
@@ -15,16 +17,21 @@ const App: React.FC = () => {
             <main className='flex-grow'>
                 <Routes>
                     <Route path="/" element={<Home />} />
-                    <Route path="/sorting" element={<SortingHome />} />
+
+                    <Route path="/sorting"                element={<SortingHome />} />
                     <Route path="/sorting/selection-sort" element={<SortingVisualizer />} />
-                    <Route path="/sorting/bubble-sort" element={<SortingVisualizer />} />
-                    <Route path="/sorting/shaker-sort" element={<SortingVisualizer />} />
-                    <Route path="/sorting/merge-sort" element={<SortingVisualizer />} />
-                    <Route path="/pathfinding" element={<PathfindingHome />} />
-                    <Route path="/pathfinding/dijkstra" element={<PathfindingVisualizer />} />
-                    <Route path="/pathfinding/astar" element={<PathfindingVisualizer />} />
+                    <Route path="/sorting/bubble-sort"    element={<SortingVisualizer />} />
+                    <Route path="/sorting/shaker-sort"    element={<SortingVisualizer />} />
+                    <Route path="/sorting/merge-sort"     element={<SortingVisualizer />} />
+
+                    <Route path="/pathfinding"                    element={<PathfindingHome />} />
+                    <Route path="/pathfinding/dijkstra"           element={<PathfindingVisualizer />} />
+                    <Route path="/pathfinding/astar"              element={<PathfindingVisualizer />} />
                     <Route path="/pathfinding/depth-first-search" element={<PathfindingVisualizer />} />
-                    <Route path="/pathfinding/bidirectional" element={<PathfindingVisualizer />} />
+                    <Route path="/pathfinding/bidirectional"      element={<PathfindingVisualizer />} />
+
+                    <Route path="/fractals"                 element={<FractalsPage />} />
+                    <Route path="/fractals/pythagoras-tree" element={<PythagorasTreePage />} />
                 </Routes>
             </main>
             <Footer />

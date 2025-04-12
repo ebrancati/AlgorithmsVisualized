@@ -1,5 +1,5 @@
 import { Cell, GridType } from '../../types/pathfinding';
-import playSound from '../../utils/playSound';
+import { playAlgorithmSound as playSound } from '../audioUtils';
 
 /**
  * Reconstructs a path from a start node to an end node using a came-from map
