@@ -1,54 +1,139 @@
-# React + TypeScript + Vite
+# Algorithms Visualized
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+An interactive web application for visualizing and learning about fundamental computer science algorithms through real-time visualizations.
 
-Currently, two official plugins are available:
+This project is designed for students, programmers, and anyone curious to see algorithms "in action". It currently includes:
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **Sorting Algorithms**: Selection Sort, Bubble Sort, Shaker Sort, Merge Sort
+- **Pathfinding Algorithms**: Dijkstra's Algorithm, A*, Depth-First Search, Bidirectional Search
+- **Fractals**: Pythagoras Tree
 
-## Expanding the ESLint configuration
+## How to Contribute
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+Want to add a new visualization or improve existing code? Great! Here's how:
 
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+### Initial Setup
+
+1. Clone the repository:
+   ```
+   git clone https://github.com/ebrancati/AlgorithmsVisualized.git
+   cd AlgorithmsVisualized
+   ```
+
+2. Install dependencies:
+   ```
+   npm install
+   ```
+
+3. Start the development server:
+   ```
+   npm run dev
+   ```
+
+4. Open your browser at `http://localhost:5173`
+
+### Project Structure
+
+The project is organized so that each type of algorithm has its dedicated files, making it easy to add new visualizations.
+
+```
+src/
+│
+├── algorithms/               # Algorithm implementations
+│   ├── pathfinding/          # Path search algorithms
+│   ├── sorting/              # Sorting algorithms
+│   └── fractals/             # Algorithms for generating fractals
+│
+├── components/               # Reusable UI components
+│   ├── fractals/             # Fractal-specific components
+│   ├── pathfinding/          # Pathfinding-specific components
+│   └── sorting/              # Sorting-specific components
+│
+├── pages/                    # Application pages
+│   ├── fractals/             # Fractal visualization pages
+│   ├── pathfinding/          # Pathfinding visualization pages
+│   └── sorting/              # Sorting visualization pages
+│
+├── utils/                    # Utility functions
+│   ├── audioUtils.ts         # Audio generation for algorithms
+│   └── pathfinding/          # Pathfinding utilities
+│
+└── types/                    # TypeScript type definitions
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### Key Principle: Separation Between Algorithms and UI
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+An important principle in this project is to keep the algorithm implementation separate from its visualization:
 
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
-```
+- **Pure algorithms** go in the `algorithms/` folder
+- **Visualization components** go in the `components/` folder
+- **Pages** that use them go in the `pages/` folder
+
+### How to Add a New Algorithm
+
+1. **Choose the category** (sorting, pathfinding, fractals, etc.)
+2. **Create the algorithm implementation** in the appropriate folder in `algorithms/`
+3. **Create necessary visualization components** in `components/` (if needed)
+4. **Integrate the algorithm into the existing page or create a new page**:
+   - For sorting: Add to the existing `SortingVisualizer.tsx` page which supports multiple algorithms
+   - For pathfinding: Add to the existing `PathfindingVisualizer.tsx` page which supports multiple algorithms
+   - For fractals: Usually requires a new dedicated page (like `PythagorasTreePage.tsx`)
+5. **Add routing** in `App.tsx` if needed (may not be necessary for sorting and pathfinding)
+6. **Update the category's home page** to include the new algorithm
+
+### Example: Adding a New Sorting Algorithm
+
+Let's say we want to add Quick Sort to our visualization project:
+
+1. **Create the algorithm implementation file** in the appropriate algorithms folder
+   - Define the main sorting function and helper functions like partition
+   - Implement visualization hooks for showing the pivot selection and partitioning
+
+2. **Add the new algorithm to the exports** in the index file so it's available throughout the application
+
+3. **Create an algorithm description** that explains:
+   - How Quick Sort works (selecting a pivot and partitioning)
+   - Its time complexity (best: O(n log n), average: O(n log n), worst: O(n²))
+   - Advantages and disadvantages compared to other sorting algorithms
+
+4. **Update the algorithm selection UI** to include Quick Sort as an option in the dropdown
+
+5. **Add handling for the new algorithm** in the main sorting function to call Quick Sort when selected
+
+6. **Create a navigation link** to Quick Sort on the main sorting page
+
+7. **Add the appropriate routing** in the app configuration
+
+This process keeps the algorithm implementation separate from the visualization, following the project's architecture pattern.
+
+### Code Guidelines
+
+- Use TypeScript for all new code
+- Follow existing code style
+- Add comments to explain complex parts
+- Make sure the visualization is responsive
+
+## Submitting a Pull Request
+
+1. Create a branch for your feature:
+   ```
+   git checkout -b feature/feature-name
+   ```
+
+2. Commit your changes with descriptive messages:
+   ```
+   git commit -m "feat: add Breadth-First Search algorithm"
+   ```
+
+3. Push the branch:
+   ```
+   git push origin feature/feature-name
+   ```
+
+4. Open a Pull Request on the GitHub repository
+
+## Any Questions?
+
+If you have questions or need help, open an issue on GitHub or contact me at enzo.brancati04@gmail.com
+
+Thank you for your interest in improving Algorithms Visualized! ❤
