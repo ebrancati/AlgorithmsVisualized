@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import { Link } from "react-router-dom";
 import Slider from '../../components/fractals/Slider';
 import { playFractalSound as playSound} from '../../utils/audioUtils';
+import { generatePythagorasTree } from '../../algorithms/fractals/pythagorasTree';
 
 /**
  * Extends the standard Document interface to support cross-browser fullscreen functionality.
@@ -23,49 +24,6 @@ interface FullscreenElement extends HTMLDivElement {
     mozRequestFullScreen?: () => void;
     webkitRequestFullscreen?: () => void;
     msRequestFullscreen?: () => void;
-}
-
-/**
- * Vector class for 2D geometric operations
- * Provides methods for vector manipulation used in fractal generation
- */
-class Vector {
-    x: number;
-    y: number;
-
-    constructor(x = 0, y = 0) {
-        this.x = x;
-        this.y = y;
-    }
-
-    copy() {
-        return new Vector(this.x, this.y);
-    }
-
-    add(v: Vector) {
-        return new Vector(this.x + v.x, this.y + v.y);
-    }
-
-    sub(v: Vector) {
-        return new Vector(this.x - v.x, this.y - v.y);
-    }
-
-    mult(n: number) {
-        return new Vector(this.x * n, this.y * n);
-    }
-
-    div(n: number) {
-        return new Vector(this.x / n, this.y / n);
-    }
-
-    rotate(angle: number) {
-        const cos = Math.cos(angle);
-        const sin = Math.sin(angle);
-        return new Vector(
-            this.x * cos - this.y * sin,
-            this.x * sin + this.y * cos
-        );
-    }
 }
 
 const PythagorasTreePage: React.FC = () => {
@@ -94,47 +52,6 @@ const PythagorasTreePage: React.FC = () => {
     const isDrawingRef = useRef<boolean>(false);
     const needsUpdateRef = useRef<boolean>(true);
     const treeCacheRef = useRef<{ [key: string]: ImageData }>({});
-
-    /**
-     * Recursive function to draw the Pythagoras Tree fractal
-     * Implements the geometric construction of squares and triangles
-     */
-    const iter = useCallback((ctx: CanvasRenderingContext2D, A: Vector, B: Vector, depth: number) => {
-        // Create points C, D by rotating vectors at right angles from the base points
-        const C = A.copy()
-            .sub(B)
-            .rotate(-Math.PI / 2)
-            .add(B);
-        const D = B.copy()
-            .sub(A)
-            .rotate(Math.PI / 2)
-            .add(A);
-        // Find the midpoint E between C and D, then calculate point F with rotation
-        const E = C.copy().add(D).div(2);
-        const F = C.copy().sub(E).rotate(currentAngleRef.current).add(E);
-
-        if (depth === 0) return;
-
-        // Color based on depth - creates a visual gradient effect
-        const hue = 220 - depth * 10;
-        ctx.fillStyle = `hsl(${hue}, 70%, 50%)`;
-        ctx.strokeStyle = '#333';
-        ctx.lineWidth = 0.5;
-
-        // Draw the shape
-        ctx.beginPath();
-        ctx.moveTo(A.x, A.y);
-        ctx.lineTo(B.x, B.y);
-        ctx.lineTo(C.x, C.y);
-        ctx.lineTo(D.x, D.y);
-        ctx.closePath();
-        ctx.fill();
-        ctx.stroke();
-
-        // Continue recursion for the two branches
-        iter(ctx, D, F, depth - 1);
-        iter(ctx, F, C, depth - 1);
-    }, []);
 
     /**
      * Main drawing function with caching mechanism for performance optimization
@@ -166,13 +83,16 @@ const PythagorasTreePage: React.FC = () => {
         ctx.translate(canvas.width / 2 + panPosition.x, canvas.height * 0.95 + panPosition.y);
         ctx.scale(scale, -scale);
 
-        // Starting points - size proportional to canvas, but limited to ensure it fits
-        const baseSize = Math.min(canvas.width, canvas.height) * 0.18;
-        const startA = new Vector(-baseSize / 2, 0); // Center the initial square
-        const startB = new Vector(baseSize / 2, 0);
-
-        // Draw the tree
-        iter(ctx, startA, startB, currentDepthRef.current);
+        generatePythagorasTree(
+            ctx, 
+            { 
+                depth: currentDepthRef.current, 
+                angle: currentAngleRef.current,
+                baseHue: 220
+            },
+            canvas.width,
+            canvas.height
+        );
 
         ctx.restore();
 
@@ -192,7 +112,7 @@ const PythagorasTreePage: React.FC = () => {
 
         isDrawingRef.current = false;
         needsUpdateRef.current = false;
-    }, [panPosition, scale, iter]);
+    }, [panPosition, scale]);
 
     // Function to directly draw the tree (used for reset)
     const drawDirectly = useCallback(() => {
@@ -209,15 +129,19 @@ const PythagorasTreePage: React.FC = () => {
         ctx.translate(canvas.width / 2, canvas.height * 0.95);
         ctx.scale(scale, -scale); // Apply zoom but maintain the y-axis flip
 
-        // Starting points - size proportional to canvas
-        const baseSize = Math.min(canvas.width, canvas.height) * 0.18;
-        const startA = new Vector(-baseSize / 2, 0);
-        const startB = new Vector(baseSize / 2, 0);
-
-        iter(ctx, startA, startB, currentDepthRef.current);
+        generatePythagorasTree(
+            ctx, 
+            { 
+                depth: currentDepthRef.current, 
+                angle: currentAngleRef.current,
+                baseHue: 220
+            },
+            canvas.width,
+            canvas.height
+        );
 
         ctx.restore();
-    }, [scale, iter]);
+    }, [scale]);
 
     /**
      * Handles canvas resizing, with special handling for fullscreen mode and mobile devices
@@ -381,11 +305,16 @@ const PythagorasTreePage: React.FC = () => {
                 ctx.translate(canvas.width / 2, canvas.height * 0.95);
                 ctx.scale(1, -1); // Reset to default scale
 
-                const baseSize = Math.min(canvas.width, canvas.height) * 0.18;
-                const startA = new Vector(-baseSize / 2, 0);
-                const startB = new Vector(baseSize / 2, 0);
-
-                iter(ctx, startA, startB, currentDepthRef.current);
+                generatePythagorasTree(
+                    ctx, 
+                    { 
+                        depth: currentDepthRef.current, 
+                        angle: currentAngleRef.current,
+                        baseHue: 220
+                    },
+                    canvas.width,
+                    canvas.height
+                );
 
                 ctx.restore();
             }
@@ -399,7 +328,7 @@ const PythagorasTreePage: React.FC = () => {
                 drawDirectly();
             }
         });
-    }, [drawDirectly, iter, setPanPosition, setScale]);
+    }, [drawDirectly, setPanPosition, setScale]);
 
     // Listen for fullscreen changes
     useEffect(() => {

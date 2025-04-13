@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import playSound from '../../utils/audioUtils';
+import { playAlgorithmSound as playSound } from '../../utils/audioUtils';
 import { runSelectionSort, runBubbleSort, runShakerSort, runMergeSort } from '../../algorithms/sorting';
 import { ArrayElement, AlgorithmType, ElementStatus } from '../../types/sorting';
 import AlgorithmDescription from '../../components/sorting/AlgorithmDescription';
