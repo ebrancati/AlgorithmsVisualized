@@ -112,36 +112,8 @@ const PythagorasTreePage: React.FC = () => {
 
         isDrawingRef.current = false;
         needsUpdateRef.current = false;
+
     }, [panPosition, scale]);
-
-    // Function to directly draw the tree (used for reset)
-    const drawDirectly = useCallback(() => {
-        if (!canvasRef.current) return;
-
-        const canvas = canvasRef.current;
-        const ctx = canvas.getContext('2d');
-        if (!ctx) return;
-
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-        // Set origin at bottom center without any panning offset
-        ctx.save();
-        ctx.translate(canvas.width / 2, canvas.height * 0.95);
-        ctx.scale(scale, -scale); // Apply zoom but maintain the y-axis flip
-
-        generatePythagorasTree(
-            ctx, 
-            { 
-                depth: currentDepthRef.current, 
-                angle: currentAngleRef.current,
-                baseHue: 220
-            },
-            canvas.width,
-            canvas.height
-        );
-
-        ctx.restore();
-    }, [scale]);
 
     /**
      * Handles canvas resizing, with special handling for fullscreen mode and mobile devices
@@ -318,17 +290,16 @@ const PythagorasTreePage: React.FC = () => {
 
                 ctx.restore();
             }
+
+            setTimeout(() => {
+                // trick to force a re-render, slightly modify and then restore the scale value
+                setScale(0.999);
+                setTimeout(() => setScale(1.0), 10);
+            }, 10);
         }
 
-        // Force redraw on next frame
-        needsUpdateRef.current = true;
-        requestAnimationFrame(() => {
-            // Manual reset of pan position in internal references
-            if (canvasRef.current) {
-                drawDirectly();
-            }
-        });
-    }, [drawDirectly, setPanPosition, setScale]);
+
+    }, [setPanPosition, setScale]);
 
     // Listen for fullscreen changes
     useEffect(() => {
@@ -540,19 +511,13 @@ const PythagorasTreePage: React.FC = () => {
                         label="Recursion Depth"
                         value={depth}
                         onChange={(newDepth) => {
+                            playSound(newDepth);
                             if (newDepth !== currentDepthRef.current) {
-                                playSound(newDepth);
                                 setDepth(newDepth);
                                 currentDepthRef.current = newDepth;
 
                                 needsUpdateRef.current = true;
                                 requestAnimationFrame(drawTree);
-
-                                // If view is already centered, maintain it centered
-                                if (panPosition.x === 0 && panPosition.y === 0 && resetButtonRef.current) {
-                                    // Simulate a click on the reset button
-                                    resetButtonRef.current.click();
-                                }
                             }
                         }}
                         min={0}
@@ -576,10 +541,6 @@ const PythagorasTreePage: React.FC = () => {
 
                                 needsUpdateRef.current = true;
                                 requestAnimationFrame(drawTree);
-
-                                if (panPosition.x === 0 && panPosition.y === 0 && resetButtonRef.current) {
-                                    resetButtonRef.current.click();
-                                }
                             }
                         }}
                         min={0}
