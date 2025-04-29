@@ -59,60 +59,65 @@ const PythagorasTreePage: React.FC = () => {
      */
     const drawTree = useCallback(() => {
         if (!needsUpdateRef.current || isDrawingRef.current || !canvasRef.current) return;
-
+        
         const canvas = canvasRef.current;
         const ctx = canvas.getContext('2d');
         if (!ctx) return;
-
+        
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-
+        
+        // Only cache recursion depths 13, 14, 15
+        const shouldCache = currentDepthRef.current >= 13;
+        
         // Create unique cache key based on all parameters that affect rendering
         const cacheKey = `${currentDepthRef.current}_${currentAngleRef.current.toFixed(2)}_${canvas.width}_${canvas.height}_${panPosition.x.toFixed(0)}_${panPosition.y.toFixed(0)}_${scale.toFixed(2)}`;
-
-        if (treeCacheRef.current[cacheKey]) {
+        
+        // Check cache only if depth is >= 13
+        if (shouldCache && treeCacheRef.current[cacheKey]) {
             ctx.putImageData(treeCacheRef.current[cacheKey], 0, 0);
             needsUpdateRef.current = false;
             return;
         }
-
+        
         isDrawingRef.current = true;
         const renderStartTime = performance.now();
-
+        
         // Set origin at bottom center and apply panning offset and zoom
         ctx.save();
         ctx.translate(canvas.width / 2 + panPosition.x, canvas.height * 0.95 + panPosition.y);
         ctx.scale(scale, -scale);
-
+        
         generatePythagorasTree(
-            ctx, 
-            { 
-                depth: currentDepthRef.current, 
+            ctx,
+            {
+                depth: currentDepthRef.current,
                 angle: currentAngleRef.current,
                 baseHue: 220
             },
             canvas.width,
             canvas.height
         );
-
+        
         ctx.restore();
-
-        // Cache the result for future reuse
-        treeCacheRef.current[cacheKey] = ctx.getImageData(0, 0, canvas.width, canvas.height);
-
-        // Manage cache size (limit to 10 entries)
-        const keys = Object.keys(treeCacheRef.current);
-        if (keys.length > 10) {
-            delete treeCacheRef.current[keys[0]];
+        
+        // Cache the result only for higher recursion depths
+        if (shouldCache) {
+            treeCacheRef.current[cacheKey] = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        
+            // Limit cache to about 3 elements (for the three depth levels)
+            const keys = Object.keys(treeCacheRef.current);
+            if (keys.length > 5) { // Keep some extra margin
+                delete treeCacheRef.current[keys[0]];
+            }
         }
-
+        
         const renderEndTime = performance.now();
         if (renderTimeRef.current) {
             renderTimeRef.current.textContent = Math.round(renderEndTime - renderStartTime) + ' ms';
         }
-
+        
         isDrawingRef.current = false;
         needsUpdateRef.current = false;
-
     }, [panPosition, scale]);
 
     /**
