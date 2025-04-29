@@ -64,6 +64,9 @@ const PythagorasTreePage: React.FC = () => {
         const ctx = canvas.getContext('2d');
         if (!ctx) return;
         
+        // Start timing for both paths
+        const renderStartTime = performance.now();
+        
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         
         // Only cache recursion depths 13, 14, 15
@@ -75,12 +78,18 @@ const PythagorasTreePage: React.FC = () => {
         // Check cache only if depth is >= 13
         if (shouldCache && treeCacheRef.current[cacheKey]) {
             ctx.putImageData(treeCacheRef.current[cacheKey], 0, 0);
+            
+            // End timing for cached path
+            const renderEndTime = performance.now();
+            if (renderTimeRef.current) {
+                renderTimeRef.current.textContent = Math.round(renderEndTime - renderStartTime) + ' ms (cached)';
+            }
+            
             needsUpdateRef.current = false;
             return;
         }
         
         isDrawingRef.current = true;
-        const renderStartTime = performance.now();
         
         // Set origin at bottom center and apply panning offset and zoom
         ctx.save();
@@ -103,7 +112,7 @@ const PythagorasTreePage: React.FC = () => {
         // Cache the result only for higher recursion depths
         if (shouldCache) {
             treeCacheRef.current[cacheKey] = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        
+           
             // Limit cache to about 3 elements (for the three depth levels)
             const keys = Object.keys(treeCacheRef.current);
             if (keys.length > 5) { // Keep some extra margin
@@ -111,6 +120,7 @@ const PythagorasTreePage: React.FC = () => {
             }
         }
         
+        // End timing for non-cached path
         const renderEndTime = performance.now();
         if (renderTimeRef.current) {
             renderTimeRef.current.textContent = Math.round(renderEndTime - renderStartTime) + ' ms';
