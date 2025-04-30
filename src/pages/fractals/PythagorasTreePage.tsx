@@ -30,6 +30,7 @@ const PythagorasTreePage: React.FC = () => {
     // Refs for canvas and controls
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const renderTimeRef = useRef<HTMLSpanElement>(null);
+    const elementsCountRef = useRef<HTMLSpanElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
     const resetButtonRef = useRef<HTMLButtonElement>(null);
 
@@ -64,7 +65,6 @@ const PythagorasTreePage: React.FC = () => {
         const ctx = canvas.getContext('2d');
         if (!ctx) return;
         
-        // Start timing for both paths
         const renderStartTime = performance.now();
         
         ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -75,6 +75,14 @@ const PythagorasTreePage: React.FC = () => {
         // Create unique cache key based on all parameters that affect rendering
         const cacheKey = `${currentDepthRef.current}_${currentAngleRef.current.toFixed(2)}_${canvas.width}_${canvas.height}_${panPosition.x.toFixed(0)}_${panPosition.y.toFixed(0)}_${scale.toFixed(2)}`;
         
+        const elementsCount = currentDepthRef.current === 0 
+            ? 0 
+            : Math.pow(2, currentDepthRef.current) - 1;
+
+        if (elementsCountRef.current) {
+            elementsCountRef.current.textContent = elementsCount.toLocaleString();
+        }
+
         // Check cache only if depth is >= 13
         if (shouldCache && treeCacheRef.current[cacheKey]) {
             ctx.putImageData(treeCacheRef.current[cacheKey], 0, 0);
@@ -106,7 +114,7 @@ const PythagorasTreePage: React.FC = () => {
             canvas.width,
             canvas.height
         );
-        
+
         ctx.restore();
         
         // Cache the result only for higher recursion depths
@@ -576,6 +584,13 @@ const PythagorasTreePage: React.FC = () => {
                             Render Time: <span ref={renderTimeRef} className="ml-1 font-medium">0 ms</span>
                         </div>
 
+                        <div className="px-3 py-1 bg-green-50 text-green-600 rounded-full inline-flex items-center text-sm">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                                <path fillRule="evenodd" d="M5 3a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2V5a2 2 0 00-2-2H5zm0 2h10v10H5V5z" />
+                            </svg>
+                            Elements: <span ref={elementsCountRef} className="ml-1 font-medium">0</span>
+                        </div>
+                        
                         <button
                             ref={resetButtonRef}
                             onClick={handleResetView}
