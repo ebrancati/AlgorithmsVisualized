@@ -94,16 +94,17 @@ export const playFractalSound = (depth: number): void => {
 
     oscillator.frequency.value = frequency;
 
-    // Schedule the envelope with abrupt transitions for robotic feel
+    // Sound volume control over time
     const now = audioContext.currentTime;
-    gainNode.gain.setValueAtTime(0, now);
-    gainNode.gain.linearRampToValueAtTime(0.15, now + 0.02); // Quick attack
-    gainNode.gain.setValueAtTime(0.12, now + 0.2); // Abrupt drop
-    gainNode.gain.setValueAtTime(0.09, now + 0.3); // Another drop
-    gainNode.gain.linearRampToValueAtTime(0, now + 0.5); // Quick release
+
+    gainNode.gain.setValueAtTime(0, now); // Start silent
+    gainNode.gain.linearRampToValueAtTime(0.15, now + 0.01); // Rise to peak
+    gainNode.gain.linearRampToValueAtTime(0.12, now + 0.2); // First decrease
+    gainNode.gain.linearRampToValueAtTime(0.09, now + 0.3); // Second decrease
+    gainNode.gain.linearRampToValueAtTime(0, now + 0.6); // Fade out
 
     oscillator.start(now);
-    oscillator.stop(now + 0.5);
+    oscillator.stop(now + 0.6);
   } catch (error) {
     console.error("Error playing fractal sound:", error);
   }
