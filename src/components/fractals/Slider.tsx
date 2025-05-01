@@ -40,7 +40,7 @@ const Slider: React.FC<SliderProps> = ({
   
   return (
     <div className={`mb-6 ${className}`}>
-      <label className="block text-gray-700 text-sm font-bold mb-2">
+      <label className="block text-gray-700 text-sm font-bold mb-2 mt-1">
         {label}: {value}{unit}
       </label>
       <div className="relative">
