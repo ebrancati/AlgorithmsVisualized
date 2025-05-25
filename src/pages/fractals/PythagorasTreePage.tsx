@@ -4,24 +4,6 @@ import Slider from '../../components/fractals/Slider';
 import { playFractalSound as playSound} from '../../utils/audioUtils';
 import { generatePythagorasTree } from '../../algorithms/fractals/pythagorasTree';
 
-/**
- * Extends the standard Document interface to support cross-browser fullscreen functionality.
- */
-interface FullscreenDocument extends Document {
-    mozFullScreenElement?: Element;
-    webkitFullscreenElement?: Element;
-    msFullscreenElement?: Element;
-    mozCancelFullScreen?: () => void;
-    webkitExitFullscreen?: () => void;
-    msExitFullscreen?: () => void;
-}
-
-interface FullscreenElement extends HTMLDivElement {
-    mozRequestFullScreen?: () => void;
-    webkitRequestFullscreen?: () => void;
-    msRequestFullscreen?: () => void;
-}
-
 const PythagorasTreePage: React.FC = () => {
     // Refs for canvas and controls
     const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -39,9 +21,8 @@ const PythagorasTreePage: React.FC = () => {
     const [panPosition, setPanPosition] = useState<{ x: number, y: number }>({ x: 0, y: 0 });
     const lastPanPointRef = useRef<{ x: number, y: number }>({ x: 0, y: 0 });
 
-    // State for zoom and fullscreen
+    // State for zoom
     const [scale, setScale] = useState<number>(1.0);
-    const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
 
     // Refs for tree properties
     const currentDepthRef = useRef<number>(5);
@@ -132,34 +113,15 @@ const PythagorasTreePage: React.FC = () => {
     }, [panPosition, scale]);
 
     /**
-     * Toggles fullscreen mode with cross-browser support
+     * Toggles fullscreen mode with modern API
      */
     const toggleFullscreen = () => {
         if (!containerRef.current) return;
 
-        const fullscreenContainer = containerRef.current as FullscreenElement;
-        const doc = document as FullscreenDocument;
-
-        if (!isFullscreen) {
-            if (fullscreenContainer.requestFullscreen) {
-                fullscreenContainer.requestFullscreen();
-            } else if (fullscreenContainer.mozRequestFullScreen) {
-                fullscreenContainer.mozRequestFullScreen();
-            } else if (fullscreenContainer.webkitRequestFullscreen) {
-                fullscreenContainer.webkitRequestFullscreen();
-            } else if (fullscreenContainer.msRequestFullscreen) {
-                fullscreenContainer.msRequestFullscreen();
-            }
+        if (!document.fullscreenElement) {
+            containerRef.current.requestFullscreen();
         } else {
-            if (doc.exitFullscreen) {
-                doc.exitFullscreen();
-            } else if (doc.mozCancelFullScreen) {
-                doc.mozCancelFullScreen();
-            } else if (doc.webkitExitFullscreen) {
-                doc.webkitExitFullscreen();
-            } else if (doc.msExitFullscreen) {
-                doc.msExitFullscreen();
-            }
+            document.exitFullscreen();
         }
     };
 
@@ -263,41 +225,7 @@ const PythagorasTreePage: React.FC = () => {
 
                 ctx.restore();
             }
-
-            // Force re-render trick
-            setTimeout(() => {
-                setScale(0.999);
-                setTimeout(() => setScale(1.0), 10);
-            }, 10);
         }
-    }, []);
-
-    // Listen for fullscreen changes
-    useEffect(() => {
-        const doc = document as FullscreenDocument;
-        
-        const handleFullscreenChange = () => {
-            const isCurrentlyFullscreen = !!(
-                doc.fullscreenElement ||
-                doc.mozFullScreenElement ||
-                doc.webkitFullscreenElement ||
-                doc.msFullscreenElement
-            );
-
-            setIsFullscreen(isCurrentlyFullscreen);
-        };
-
-        document.addEventListener('fullscreenchange', handleFullscreenChange);
-        document.addEventListener('mozfullscreenchange', handleFullscreenChange);
-        document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
-        document.addEventListener('MSFullscreenChange', handleFullscreenChange);
-
-        return () => {
-            document.removeEventListener('fullscreenchange', handleFullscreenChange);
-            document.removeEventListener('mozfullscreenchange', handleFullscreenChange);
-            document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
-            document.removeEventListener('MSFullscreenChange', handleFullscreenChange);
-        };
     }, []);
 
     // Canvas initialization and event listeners
@@ -354,7 +282,7 @@ const PythagorasTreePage: React.FC = () => {
                     <div className="w-full flex items-center justify-center mt-4 relative">
                         <div
                             ref={containerRef}
-                            className={`p-2 border border-gray-300 bg-gray-50 rounded-lg shadow-inner w-full relative ${isFullscreen ? 'h-screen flex items-center justify-center' : ''}`}
+                            className={`p-2 border border-gray-300 bg-gray-50 rounded-lg shadow-inner w-full relative ${document.fullscreenElement ? 'h-screen flex items-center justify-center' : ''}`}
                         >
                             <canvas
                                 ref={canvasRef}
@@ -368,10 +296,6 @@ const PythagorasTreePage: React.FC = () => {
                                 onTouchStart={handleTouchStart}
                                 onTouchMove={handleTouchMove}
                                 onTouchEnd={handleTouchEnd}
-                                onClick={() => {
-                                    needsUpdateRef.current = true;
-                                    requestAnimationFrame(drawTree);
-                                }}
                             />
 
                             {/* Pan instructions */}
@@ -429,9 +353,9 @@ const PythagorasTreePage: React.FC = () => {
                                 <button
                                     onClick={toggleFullscreen}
                                     className="bg-white w-8 h-8 rounded-full shadow flex items-center justify-center hover:bg-gray-100 transition-colors"
-                                    title={isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}
+                                    title={document.fullscreenElement ? "Exit Fullscreen" : "Enter Fullscreen"}
                                 >
-                                    {isFullscreen ? (
+                                    {document.fullscreenElement ? (
                                         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                                         </svg>
@@ -499,7 +423,7 @@ const PythagorasTreePage: React.FC = () => {
 
                     {showPerformanceWarning && (
                         <div className="fixed top-4 right-4 z-50 max-w-sm">
-                            <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 rounded-lg shadow-lg animate-slide-in">
+                            <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 rounded-lg shadow-lg">
                                 <div className="flex items-start">
                                     <div className="flex-shrink-0">
                                         <svg className="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
