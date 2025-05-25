@@ -57,7 +57,14 @@ export const usePathfindingGrid = ({
     // Timer for tracking elapsed time
     useEffect(() => {
         if (stats.isRunning) {
+            // Reset dragging state when algorithm starts to prevent blinking nodes
+            setDraggingNodeType(null);
+            setIsNodeSelectionMode(false);
+
+            // Calculate start time to preserve elapsed time across pause/resume
             startTimeRef.current = Date.now() - stats.elapsedTime;
+
+            // Update elapsed time every 100ms for real-time display in stats
             timerRef.current = setInterval(() => {
                 setStats(prevStats => ({
                     ...prevStats,
@@ -65,6 +72,7 @@ export const usePathfindingGrid = ({
                 }));
             }, 100);
         } else if (timerRef.current) {
+            // Clean up timer when algorithm stops
             clearInterval(timerRef.current);
         }
 
