@@ -87,6 +87,16 @@ export const usePathfindingGrid = ({
     const handleCellClick = (x: number, y: number) => {
         if (isRunningRef.current) return;
 
+        // Block modifications if algorithm has run and there are results
+        // unless we're in node selection mode (edit mode active)
+        const hasResults = grid.some(row => 
+            row.some(cell => cell.type === 'visited' || cell.type === 'path')
+        );
+        
+        if (hasResults && !isNodeSelectionMode) {
+            return; // Block modifications until Edit Grid is pressed
+        }
+
         const clickedCell = grid[y][x];
 
         // Case 1: Cell is start node - begin selection
