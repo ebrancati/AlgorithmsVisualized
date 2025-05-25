@@ -103,7 +103,6 @@ const PathfindingVisualizer: React.FC = () => {
             }
             
             setCurrentAlgorithm(newAlgorithm);
-            previousAlgorithm.current = newAlgorithm;
         } else {
             navigate("/pathfinding/dijkstra", { replace: true });
         }
@@ -164,12 +163,34 @@ const PathfindingVisualizer: React.FC = () => {
         }
         
         setCurrentAlgorithm(newAlgorithm);
-        previousAlgorithm.current = newAlgorithm;
+        // previousAlgorithm.current = newAlgorithm; ← RIMUOVI questa riga
         navigate(`/pathfinding/${newAlgorithm}`, { replace: true });
+
+        // Reset visited and path cells when changing algorithm
+        setGrid(prevGrid =>
+            prevGrid.map(row =>
+                row.map(cell => {
+                    if (cell.type === "visited" || cell.type === "path") {
+                        return { ...cell, type: "empty" };
+                    }
+                    return cell;
+                })
+            )
+        );
+
+        // Reset stats to initial state
+        setStats({
+            visitedCells: 0,
+            pathDistance: 0,
+            elapsedTime: 0,
+            isRunning: false
+        });
     };
     
     // Main algorithm runner
     const handleStartAlgorithm = async () => {
+        previousAlgorithm.current = currentAlgorithm;
+
         if (!start || !end) return;
         
         // Reset any error messages
@@ -314,7 +335,7 @@ const PathfindingVisualizer: React.FC = () => {
                         isRunning={stats.isRunning}
                         hasStartAndEnd={Boolean(start && end)}
                         currentAlgorithm={currentAlgorithm}
-                        hasVisitedOrPath={hasVisitedOrPathCells(grid)}
+                        hasVisitedOrPath={hasVisitedOrPathCells(grid) && previousAlgorithm.current === currentAlgorithm}
                     />
                 </div>
             </div>

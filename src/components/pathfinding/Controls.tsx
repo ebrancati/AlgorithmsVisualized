@@ -9,7 +9,7 @@ interface ControlsProps {
     isRunning: boolean;
     hasStartAndEnd: boolean;
     currentAlgorithm: AlgorithmType;
-    hasVisitedOrPath: boolean; // New prop to check if there are visited or path cells
+    hasVisitedOrPath: boolean;
 }
 
 /**
@@ -67,7 +67,6 @@ const Controls: React.FC<ControlsProps> = ({
     hasVisitedOrPath
 }) => {
     const [editMode, setEditMode] = useState<boolean>(false);
-    const [algorithmHasRun, setAlgorithmHasRun] = useState<boolean>(false);
     
     // Handle edit grid button click
     const handleEditGrid = () => {
@@ -84,9 +83,6 @@ const Controls: React.FC<ControlsProps> = ({
             setEditMode(false);
         }
         
-        // Mark that algorithm has been run at least once
-        setAlgorithmHasRun(true);
-        
         onStartAlgorithm();
     };
     
@@ -96,14 +92,6 @@ const Controls: React.FC<ControlsProps> = ({
             setEditMode(false);
         }
     }, [isRunning]);
-
-    // When hasVisitedOrPath changes, we might want to update our local state
-    useEffect(() => {
-        // If there are visited/path cells, we've definitely run an algorithm
-        if (hasVisitedOrPath) {
-            setAlgorithmHasRun(true);
-        }
-    }, [hasVisitedOrPath]);
 
     return (
         <div className="flex flex-col mt-4 gap-2 sm:flex-row justify-center">
@@ -118,9 +106,7 @@ const Controls: React.FC<ControlsProps> = ({
             
             <ControlButton
                 onClick={handleEditGrid}
-                // Disable edit button when running OR
-                // when page is first loaded and no algorithm has run yet
-                disabled={isRunning || (!algorithmHasRun && !hasVisitedOrPath)}
+                disabled={isRunning || !hasVisitedOrPath}
                 activeStyle={editMode}
                 tooltip="Reset visited and path cells"
                 disabledTooltip={isRunning 
