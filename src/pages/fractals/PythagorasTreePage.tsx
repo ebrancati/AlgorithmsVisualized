@@ -6,10 +6,6 @@ import { generatePythagorasTree } from '../../algorithms/fractals/pythagorasTree
 
 /**
  * Extends the standard Document interface to support cross-browser fullscreen functionality.
- * Different browsers implemented fullscreen features with vendor prefixes:
- * - Mozilla (Firefox): mozFullScreenElement, mozCancelFullScreen
- * - WebKit (Safari, older Chrome): webkitFullscreenElement, webkitExitFullscreen
- * - Microsoft (IE/Edge): msFullscreenElement, msExitFullscreen
  */
 interface FullscreenDocument extends Document {
     mozFullScreenElement?: Element;
@@ -32,7 +28,6 @@ const PythagorasTreePage: React.FC = () => {
     const renderTimeRef = useRef<HTMLSpanElement>(null);
     const elementsCountRef = useRef<HTMLSpanElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
-    const resetButtonRef = useRef<HTMLButtonElement>(null);
 
     // State for tree properties
     const [depth, setDepth] = useState<number>(5);
@@ -57,7 +52,6 @@ const PythagorasTreePage: React.FC = () => {
 
     /**
      * Main drawing function with caching mechanism for performance optimization
-     * Only redraws when parameters change, otherwise reuses cached image data
      */
     const drawTree = useCallback(() => {
         if (!needsUpdateRef.current || isDrawingRef.current || !canvasRef.current) return;
@@ -88,7 +82,6 @@ const PythagorasTreePage: React.FC = () => {
         if (shouldCache && treeCacheRef.current[cacheKey]) {
             ctx.putImageData(treeCacheRef.current[cacheKey], 0, 0);
             
-            // End timing for cached path
             const renderEndTime = performance.now();
             if (renderTimeRef.current) {
                 renderTimeRef.current.textContent = Math.round(renderEndTime - renderStartTime) + ' ms (cached)';
@@ -122,14 +115,13 @@ const PythagorasTreePage: React.FC = () => {
         if (shouldCache) {
             treeCacheRef.current[cacheKey] = ctx.getImageData(0, 0, canvas.width, canvas.height);
            
-            // Limit cache to about 3 elements (for the three depth levels)
+            // Limit cache to about 3 elements
             const keys = Object.keys(treeCacheRef.current);
-            if (keys.length > 5) { // Keep some extra margin
+            if (keys.length > 5) {
                 delete treeCacheRef.current[keys[0]];
             }
         }
         
-        // End timing for non-cached path
         const renderEndTime = performance.now();
         if (renderTimeRef.current) {
             renderTimeRef.current.textContent = Math.round(renderEndTime - renderStartTime) + ' ms';
@@ -138,37 +130,6 @@ const PythagorasTreePage: React.FC = () => {
         isDrawingRef.current = false;
         needsUpdateRef.current = false;
     }, [panPosition, scale]);
-
-    /**
-     * Handles canvas resizing, with special handling for fullscreen mode and mobile devices
-     */
-    const resizeCanvas = useCallback(() => {
-        if (!canvasRef.current || !containerRef.current) return;
-
-        const canvas = canvasRef.current;
-
-        if (isFullscreen) {
-            // In fullscreen mode, use all available space
-            canvas.width = window.innerWidth - 40; // Margin to avoid scrollbars
-            canvas.height = window.innerHeight - 40;
-        } else {
-            // Normal dimensions
-            const containerWidth = window.innerWidth - 60; // Full width with some padding
-            canvas.width = containerWidth;
-
-            // Calculate appropriate height for mobile devices
-            const isMobile = window.innerWidth < 768; // Standard breakpoint for mobile
-            const maxHeight = isMobile ?
-                Math.min(400, window.innerHeight - 350) : // Reduced height for mobile
-                Math.max(600, window.innerHeight - 300);  // Standard height for desktop
-
-            canvas.height = maxHeight;
-        }
-
-        // Clear cache when resizing
-        treeCacheRef.current = {};
-        needsUpdateRef.current = true;
-    }, [isFullscreen]);
 
     /**
      * Toggles fullscreen mode with cross-browser support
@@ -182,15 +143,14 @@ const PythagorasTreePage: React.FC = () => {
         if (!isFullscreen) {
             if (fullscreenContainer.requestFullscreen) {
                 fullscreenContainer.requestFullscreen();
-            } else if (fullscreenContainer.mozRequestFullScreen) { // Firefox
+            } else if (fullscreenContainer.mozRequestFullScreen) {
                 fullscreenContainer.mozRequestFullScreen();
-            } else if (fullscreenContainer.webkitRequestFullscreen) { // Chrome, Safari, Opera
+            } else if (fullscreenContainer.webkitRequestFullscreen) {
                 fullscreenContainer.webkitRequestFullscreen();
-            } else if (fullscreenContainer.msRequestFullscreen) { // IE/Edge
+            } else if (fullscreenContainer.msRequestFullscreen) {
                 fullscreenContainer.msRequestFullscreen();
             }
         } else {
-            // Exit fullscreen mode
             if (doc.exitFullscreen) {
                 doc.exitFullscreen();
             } else if (doc.mozCancelFullScreen) {
@@ -208,7 +168,6 @@ const PythagorasTreePage: React.FC = () => {
         if (canvasRef.current) {
             setIsPanning(true);
             lastPanPointRef.current = { x: e.clientX, y: e.clientY };
-
             canvasRef.current.style.cursor = 'grabbing';
         }
     };
@@ -247,10 +206,8 @@ const PythagorasTreePage: React.FC = () => {
         }
     };
 
-    // Prevent default behavior to avoid unwanted browser actions
     const handleTouchMove = (e: React.TouchEvent<HTMLCanvasElement>) => {
         if (isPanning && e.touches.length === 1) {
-            // Prevent page scrolling during pan
             e.preventDefault();
 
             const dx = e.touches[0].clientX - lastPanPointRef.current.x;
@@ -277,29 +234,21 @@ const PythagorasTreePage: React.FC = () => {
 
     /**
      * Resets the view to the initial state (centered, default zoom)
-     * Also clears the cache to ensure a clean redraw
      */
     const handleResetView = useCallback(() => {
         setPanPosition({ x: 0, y: 0 });
-
-        // Reset zoom to default
         setScale(1.0);
-
-        // Remove cache completely
         treeCacheRef.current = {};
 
-        // Force immediate redraw, bypassing the caching mechanism
         if (canvasRef.current) {
             const canvas = canvasRef.current;
             const ctx = canvas.getContext('2d');
             if (ctx) {
-                // Clear canvas completely
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-                // Draw tree directly with pan position at 0,0
                 ctx.save();
                 ctx.translate(canvas.width / 2, canvas.height * 0.95);
-                ctx.scale(1, -1); // Reset to default scale
+                ctx.scale(1, -1);
 
                 generatePythagorasTree(
                     ctx, 
@@ -315,15 +264,13 @@ const PythagorasTreePage: React.FC = () => {
                 ctx.restore();
             }
 
+            // Force re-render trick
             setTimeout(() => {
-                // trick to force a re-render, slightly modify and then restore the scale value
                 setScale(0.999);
                 setTimeout(() => setScale(1.0), 10);
             }, 10);
         }
-
-
-    }, [setPanPosition, setScale]);
+    }, []);
 
     // Listen for fullscreen changes
     useEffect(() => {
@@ -338,15 +285,6 @@ const PythagorasTreePage: React.FC = () => {
             );
 
             setIsFullscreen(isCurrentlyFullscreen);
-
-            // When exiting fullscreen, make sure to resize canvas
-            if (!isCurrentlyFullscreen) {
-                setTimeout(() => {
-                    resizeCanvas();
-                    needsUpdateRef.current = true;
-                    requestAnimationFrame(drawTree);
-                }, 100); // Small delay to ensure DOM is updated
-            }
         };
 
         document.addEventListener('fullscreenchange', handleFullscreenChange);
@@ -360,32 +298,21 @@ const PythagorasTreePage: React.FC = () => {
             document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
             document.removeEventListener('MSFullscreenChange', handleFullscreenChange);
         };
-    }, [drawTree, resizeCanvas]);
+    }, []);
 
     // Canvas initialization and event listeners
     useEffect(() => {
-        // Initial resize and draw
-        resizeCanvas();
+        // Initial draw
         drawTree();
 
-        // Handle window resize
-        const handleResize = () => {
-            resizeCanvas();
-            needsUpdateRef.current = true;
-            requestAnimationFrame(drawTree);
-        };
-
-        window.addEventListener('resize', handleResize);
-
-        // Animation frame for continuous drawing if needed
+        // Animation frame for continuous drawing
         let animationFrameId: number;
-
         const updateCanvas = () => {
             drawTree();
             animationFrameId = requestAnimationFrame(updateCanvas);
         };
 
-        // Set document-level event handler to capture mouseup events outside the canvas
+        // Document mouse up handler for panning outside canvas
         const handleDocumentMouseUp = () => {
             if (isPanning && canvasRef.current) {
                 canvasRef.current.style.cursor = 'grab';
@@ -394,16 +321,13 @@ const PythagorasTreePage: React.FC = () => {
         };
 
         document.addEventListener('mouseup', handleDocumentMouseUp);
-
         animationFrameId = requestAnimationFrame(updateCanvas);
 
-        // Cleanup
         return () => {
-            window.removeEventListener('resize', handleResize);
             document.removeEventListener('mouseup', handleDocumentMouseUp);
             cancelAnimationFrame(animationFrameId);
         };
-    }, [isPanning, isFullscreen, drawTree, resizeCanvas]);
+    }, [isPanning, drawTree]);
 
     return (
         <div className="container mx-auto px-4 py-8">
@@ -445,11 +369,10 @@ const PythagorasTreePage: React.FC = () => {
                                 onTouchMove={handleTouchMove}
                                 onTouchEnd={handleTouchEnd}
                                 onClick={() => {
-                                    // Force redraw when canvas is clicked
                                     needsUpdateRef.current = true;
                                     requestAnimationFrame(drawTree);
                                 }}
-                            ></canvas>
+                            />
 
                             {/* Pan instructions */}
                             <div className="absolute bottom-3 right-3 z-10 flex gap-2 opacity-80 hover:opacity-100 transition-opacity">
@@ -463,17 +386,13 @@ const PythagorasTreePage: React.FC = () => {
 
                             {/* Zoom and fullscreen controls */}
                             <div className="absolute top-3 right-3 z-10 flex gap-2">
-                                {/* Zoom controls for examining fractal detail */}
+                                {/* Zoom In */}
                                 <button
                                     onClick={() => {
                                         const newScale = Math.min(scale + 0.1, 5);
                                         setScale(newScale);
-
                                         treeCacheRef.current = {};
                                         needsUpdateRef.current = true;
-
-                                        drawTree();
-
                                         requestAnimationFrame(drawTree);
                                     }}
                                     className="bg-white w-8 h-8 rounded-full shadow flex items-center justify-center hover:bg-gray-100 transition-colors"
@@ -484,17 +403,13 @@ const PythagorasTreePage: React.FC = () => {
                                     </svg>
                                 </button>
 
-                                {/* Zoom Out button */}
+                                {/* Zoom Out */}
                                 <button
                                     onClick={() => {
                                         const newScale = Math.max(scale - 0.1, 0.5);
                                         setScale(newScale);
-
                                         treeCacheRef.current = {};
                                         needsUpdateRef.current = true;
-
-                                        drawTree();
-
                                         requestAnimationFrame(drawTree);
                                     }}
                                     className="bg-white w-8 h-8 rounded-full shadow flex items-center justify-center hover:bg-gray-100 transition-colors"
@@ -530,6 +445,7 @@ const PythagorasTreePage: React.FC = () => {
                         </div>
                     </div>
                 </div>
+
                 <div className="w-full">
                     <Slider
                         label="Recursion Depth"
@@ -539,7 +455,6 @@ const PythagorasTreePage: React.FC = () => {
                             if (newDepth !== currentDepthRef.current) {
                                 setDepth(newDepth);
                                 currentDepthRef.current = newDepth;
-
                                 needsUpdateRef.current = true;
                                 requestAnimationFrame(drawTree);
                             }
@@ -558,7 +473,7 @@ const PythagorasTreePage: React.FC = () => {
                         label="Rotation Angle"
                         value={angle}
                         onChange={(newAngle) => {
-                            // Check if depth is high and show warning
+                            // Show warning if depth is high
                             if (depth > 12) {
                                 setShowPerformanceWarning(true);
                                 setTimeout(() => setShowPerformanceWarning(false), 7000);
@@ -568,7 +483,6 @@ const PythagorasTreePage: React.FC = () => {
                             if (newAngleRadians !== currentAngleRef.current) {
                                 setAngle(newAngle);
                                 currentAngleRef.current = newAngleRadians;
-
                                 needsUpdateRef.current = true;
                                 requestAnimationFrame(drawTree);
                             }
@@ -633,7 +547,6 @@ const PythagorasTreePage: React.FC = () => {
                         </div>
                         
                         <button
-                            ref={resetButtonRef}
                             onClick={handleResetView}
                             className="inline-flex items-center px-3 py-1 bg-blue-500 hover:bg-blue-600 text-white text-sm rounded-full transition-colors duration-200 shadow-sm"
                         >
